@@ -1,0 +1,49 @@
+@using StoryWriter.Data
+@using StoryWriter.Data.Entities
+
+@inject IJSRuntime JSRuntime
+@inject StoryWriterContext context
+
+<div id="location-list"></div>
+
+<script>
+    function buildLocationTable(locations) {
+        var locationList = new Tabulator("#location-list", {
+            data: locations,
+            placeholder: "No locations found...",
+            layout: "fitColumns",
+            columns: [
+                { title: "Name", field: "name", width: 200 },
+                { title: "Description", field: "description" },
+                {
+                    title: "Actions", formatter: "html", width: 200, cellClick: function (e, cell) {
+                        var id = cell.getRow().getData().id;
+                        var url = "/location/" + id;
+                        window.location.href = url;
+                    }
+                }
+            ]
+        });
+        locationList.on("rowClick", function (e, row) {
+            var id = row.getData().id;
+            var url = "/locationEdit/" + id;
+            window.location.href = url;
+        });
+    }
+</script>
+
+@code {
+    [Parameter]
+    public ICollection<LocationEntity>? Locations { get; set; }
+    [Parameter]
+    public Action<Guid>? DeleteLocation { get; set; }
+
+    protected async override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("buildLocationTable", Locations);
+            StateHasChanged();
+        }
+    }
+}

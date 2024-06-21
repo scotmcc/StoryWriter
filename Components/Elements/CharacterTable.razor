@@ -1,0 +1,51 @@
+@page "/characters"
+@using StoryWriter.Data
+@using StoryWriter.Data.Entities
+
+@inject IJSRuntime JSRuntime
+@inject StoryWriterContext context
+
+<div id="character-list"></div>
+
+<script>
+    function buildCharacterList(characters) {
+        console.log(characters);
+        var characterList = new Tabulator("#character-list", {
+            data: characters,
+            layout: "fitColumns",
+            placeholder: "No characters found...",
+            columns: [
+                { title: "Name", field: "name", width: 200 },
+                { title: "Description", field: "description" },
+                {
+                    title: "Actions", formatter: "html", width: 200, align: "center", cellClick: function (e, cell) {
+                        var id = cell.getRow().getData().id;
+                        var url = "/character/" + id;
+                        window.location.href = url;
+                    }
+                }
+            ]
+        });
+        characterList.on('rowClick', function (e, row) {
+            var id = row.getData().id;
+            var url = "/characterEdit/" + id;
+            window.location.href = url;
+        });
+    }
+</script>
+
+@code {
+    [Parameter]
+    public IEnumerable<CharacterEntity>? Characters { get; set; }
+    [Parameter]
+    public EventCallback<Guid> DeleteCharacter { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("buildCharacterList", Characters);
+            StateHasChanged();
+        }
+    }
+}

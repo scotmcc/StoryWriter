@@ -1,0 +1,48 @@
+@page "/storyList"
+
+@using StoryWriter.Services
+@using StoryWriter.Data.Entities
+@using StoryWriter.Components.Elements
+@inject StoryService StoryService
+
+<div class="card">
+    <div class="card-header">
+        <h2>Story List: @StoryCount</h2>
+    </div>
+    <div class="card-body tabulator">
+        <StoryTable Stories="@Stories" DeleteStory="@DeleteStory" />
+    </div>
+    <div class="card-footer">
+        <a class="btn btn-success" href="/storyAdd">Add Story</a>
+    </div>
+</div>
+
+@code {
+    public IEnumerable<StoryEntity> Stories { get; set; } = new List<StoryEntity>();
+    public int StoryCount { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Stories = await StoryService.GetAllAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await GetStoryCount();
+        }
+    }
+
+    private async Task GetStoryCount()
+    {
+        StoryCount = await StoryService.CountAsync();
+        StateHasChanged();
+    }
+
+    private async void DeleteStory(Guid id)
+    {
+        await StoryService.DeleteAsync(id);
+        Stories = await StoryService.GetAllAsync();
+    }
+}

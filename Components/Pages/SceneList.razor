@@ -1,0 +1,49 @@
+@page "/sceneList"
+
+@using StoryWriter.Services
+@using StoryWriter.Data.Entities
+@using StoryWriter.Components.Elements
+
+@inject SceneService SceneService
+
+<div class="card">
+    <div class="card-header">
+        <h2>Scene List: @SceneCount</h2>
+    </div>
+    <div class="card-body tabulator">
+        <SceneTable Scenes="@Scenes" DeleteScene="@DeleteScene" />
+    </div>
+    <div class="card-footer">
+        <a class="btn btn-success" href="/sceneAdd">Add Scene</a>
+    </div>
+</div>
+
+@code {
+    public ICollection<SceneEntity> Scenes { get; set; } = new List<SceneEntity>();
+    public int SceneCount { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Scenes = (await SceneService.GetAllAsync()).ToList();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await GetSceneCount();
+        }
+    }
+
+    private async Task GetSceneCount()
+    {
+        SceneCount = (await SceneService.CountAsync());
+        StateHasChanged();
+    }
+
+    private async void DeleteScene(Guid id)
+    {
+        await SceneService.DeleteAsync(id);
+        Scenes = (await SceneService.GetAllAsync()).ToList();
+    }
+}

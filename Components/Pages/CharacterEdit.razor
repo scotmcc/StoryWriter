@@ -1,0 +1,137 @@
+@page "/characterEdit/{id}"
+
+@using Microsoft.EntityFrameworkCore
+@using StoryWriter.Data.Entities
+@using StoryWriter.Services
+@using StoryWriter.Components.Layout
+@using StoryWriter.Components.Elements
+
+@inject NavigationManager NavigationManager
+@inject CharacterService CharacterService
+@inject StoryService StoryService
+@inject AIService AIService
+
+<div class="row">
+    <div class="col-8">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title">Edit Character</h3>
+            </div>
+            <div class="card-body accordion" id="characterAccordion">
+                <!-- Character Information -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#characterInfo" aria-expanded="true" aria-controls="characterInfo">
+                            Character Information
+                        </button>
+                    </h2>
+                    <div id="characterInfo" class="accordion-collapse collapse show"
+                        data-bs-parent="#characterAccordion">
+                        <CharacterForm OnStoryChanged="SetStory" Stories="@stories" Character="@character" />
+                    </div>
+                </div>
+                <!-- Story Information -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#storyInfo" aria-expanded="false" aria-controls="storyInfo">
+                            Story
+                        </button>
+                    </h2>
+                    <div id="storyInfo" class="accordion-collapse collapse" data-bs-parent="#characterAccordion">
+                        <StoryTable Stories="@stories" />
+                    </div>
+                </div>
+                <!-- Item Information -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#itemInfo" aria-expanded="false" aria-controls="itemInfo">
+                            Items
+                        </button>
+                    </h2>
+                    <div id="itemInfo" class="accordion-collapse collapse" data-bs-parent="#characterAccordion">
+                        <ItemTable Items="@character.Items" DeleteItem="@DeleteItem" />
+                    </div>
+                </div>
+                <!-- Scene Information -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#sceneInfo" aria-expanded="false" aria-controls="sceneInfo">
+                            Scenes
+                        </button>
+                    </h2>
+                    <div id="sceneInfo" class="accordion-collapse collapse" data-bs-parent="#characterAccordion">
+                        <SceneTable Scenes="@character.Scenes" />
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-primary" @onclick="UpdateCharacter">Save Character</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-4">
+        <AISuggestion ApplySuggestion="ApplySuggestion" GenerateSuggestion="GetSuggestion" suggestion="@suggestion" />
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    public MainLayout MainLayout { get; set; } = default!;
+    [Parameter]
+    public string? Id { get; set; }
+    private CharacterEntity character = new CharacterEntity();
+    private ICollection<StoryEntity> stories = new List<StoryEntity>();
+    private string suggestion = "AI Suggestion will be here...";
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id != null)
+        {
+            character = await CharacterService.GetCharacterWithDetailsAsync(Guid.Parse(Id)) ?? new CharacterEntity();
+        }
+        stories = (await StoryService.GetAllAsync()).ToList();
+    }
+
+    private async void UpdateCharacter()
+    {
+        if (Id != null)
+        {
+            await CharacterService.UpdateAsync(character);
+        }
+        else
+        {
+            await CharacterService.CreateAsync(character);
+        }
+        NavigationManager.NavigateTo("/characters");
+    }
+
+    private void SetStory(ChangeEventArgs e)
+    {
+        throw new NotImplementedException();
+    }
+
+    private async void DeleteItem(Guid id)
+    {
+        var item = character.Items.FirstOrDefault(i => i.Id == id);
+        if (item != null)
+        {
+            character.Items.Remove(item);
+            await CharacterService.UpdateAsync(character);
+        }
+    }
+
+    private async Task GetSuggestion()
+    {
+        MainLayout.ShowLoading(true);
+        suggestion = await AIService.GetCharacterDescription(character) ?? string.Empty;
+        MainLayout.ShowLoading(false);
+    }
+
+    private void ApplySuggestion()
+    {
+        character.Description = suggestion;
+    }
+}

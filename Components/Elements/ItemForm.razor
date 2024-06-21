@@ -1,0 +1,46 @@
+@using StoryWriter.Data.Entities
+<div class="container">
+    <div class="form-group mb-2">
+        <label for="category" class="form-label">Story</label>
+        <select id="category" class="form-control" @onchange="OnStoryChange">
+            <option value="">Select a story...</option>
+            @foreach (var story in Stories)
+            {
+                <option value="@story.Id" selected="@(story.Id == Item.Story.Id)">@story.Title</option>
+            }
+        </select>
+    </div>
+    <div class="form-group mb-2">
+        <label for="character" class="form-label">Character</label>
+        <select id="character" class="form-control" @onchange="OnCharacterchange">
+            <option value="">Select a character...</option>
+            @foreach (var character in Characters)
+            {
+                <option value="@character.Id" selected="@(character.Id == Item.Character.Id)">@character.Name</option>
+            }
+        </select>
+    </div>
+    <div class="form-group mb-2">
+        <label for="name" class="form-label">Name</label>
+        <input id="name" class="form-control" @bind="@Item.Name" placeholder="Item name..." />
+    </div>
+    <div class="form-group mb-2">
+        <label for="description" class="form-label">Description</label>
+        <textarea id="description" class="form-control" @bind="@Item.Description"
+            placeholder="Item description..."></textarea>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public ItemEntity Item { get; set; } = new ItemEntity();
+    [Parameter]
+    public ICollection<StoryEntity> Stories { get; set; } = new List<StoryEntity>();
+    [Parameter]
+    public ICollection<CharacterEntity> Characters { get; set; } = new List<CharacterEntity>();
+    [Parameter]
+    public EventCallback<ChangeEventArgs> OnCharacterchange { get; set; }
+    [Parameter]
+    public EventCallback<ChangeEventArgs> OnStoryChange { get; set; }
+
+}

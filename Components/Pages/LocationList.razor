@@ -1,0 +1,46 @@
+@page "/locationList"
+
+@using StoryWriter.Services
+@using StoryWriter.Data.Entities
+@using StoryWriter.Components.Elements
+
+@inject LocationService LocationService
+
+<div class="card">
+    <div class="card-header">
+        <h2>Location List : @LocationCount</h2>
+    </div>
+    <div class="card-body tabulator">
+        <LocationTable Locations="@Locations" DeleteLocation="@DeleteLocation" />
+    </div>
+    <div class="card-footer">
+        <a class="btn btn-success" href="/locationAdd">Add Location</a>
+    </div>
+</div>
+
+@code {
+    private ICollection<LocationEntity> Locations { get; set; } = new List<LocationEntity>();
+    private int LocationCount { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Locations = (await LocationService.GetAllAsync()).ToList();
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await GetLocationCount();
+        }
+    }
+    private async Task GetLocationCount()
+    {
+        LocationCount = (await LocationService.CountAsync());
+        StateHasChanged();
+    }
+    private async void DeleteLocation(Guid id)
+    {
+        await LocationService.DeleteAsync(id);
+        Locations = (await LocationService.GetAllAsync()).ToList();
+    }
+}

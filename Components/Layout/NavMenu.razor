@@ -1,0 +1,39 @@
+﻿<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+            <a class="navbar-brand" href=""> <i class="fa-solid fa-book"></i> Story Writer</a>
+        </NavLink>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="storyList" Match="NavLinkMatch.All">
+                <i class="fa-solid fa-book-open-reader"></i> Story List
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="characterList" Match="NavLinkMatch.All">
+                <i class="fa-solid fa-person-running"></i> Character List
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="itemList" Match="NavLinkMatch.All">
+                <i class="fa-solid fa-shield"></i> Item List
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="sceneList" Match="NavLinkMatch.All">
+                <i class="fa-solid fa-calendar-day"></i> Scene List
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="locationList" Match="NavLinkMatch.All">
+                <i class="fa-solid fa-map-marker"></i> Location List
+            </NavLink>
+        </div>
+    </nav>
+</div>

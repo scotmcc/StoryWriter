@@ -1,0 +1,49 @@
+@using StoryWriter.Data
+@using StoryWriter.Data.Entities
+
+@inject IJSRuntime JSRuntime
+@inject StoryWriterContext context
+
+<div id="scene-list"></div>
+
+<script>
+    function buildSceneTable(scenes) {
+        var scenelist = new Tabulator("#scene-list", {
+            data: scenes,
+            placeholder: "No scenes found...",
+            layout: "fitColumns",
+            columns: [
+                { title: "Name", field: "title", width: 200 },
+                { title: "Description", field: "description" },
+                {
+                    title: "Actions", formatter: "html", width: 200, cellClick: function (e, cell) {
+                        var id = cell.getRow().getData().id;
+                        var url = "/scene/" + id;
+                        window.location.href = url;
+                    }
+                }
+            ]
+        });
+        scenelist.on("rowClick", function (e, row) {
+            var id = row.getData().id;
+            var url = "/sceneEdit/" + id;
+            window.location.href = url;
+        });
+    }
+</script>
+
+@code {
+    [Parameter]
+    public ICollection<SceneEntity>? Scenes { get; set; }
+    [Parameter]
+    public Action<Guid>? DeleteScene { get; set; }
+
+    protected async override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("buildSceneTable", Scenes);
+            StateHasChanged();
+        }
+    }
+}

@@ -1,0 +1,114 @@
+@page "/sceneEdit/{SceneId:guid}"
+
+@using StoryWriter.Data.Entities
+@using StoryWriter.Services
+@using StoryWriter.Components.Layout
+@using StoryWriter.Components.Elements
+
+@inject NavigationManager NavigationManager
+@inject SceneService SceneService
+@inject StoryService StoryService
+@inject CharacterService CharacterService
+@inject AIService AIService
+@inject IJSRuntime JSRuntime
+
+<div class="row">
+    <div class="col-8">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title">Edit Scene</h3>
+            </div>
+            <div class="card-body accordion" id="sceneAccordion">
+                <!-- Scene -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#sceneInfo" aria-expanded="true" aria-controls="sceneInfo">
+                            Scene Information
+                        </button>
+                    </h2>
+                    <div id="sceneInfo" class="accordion-collapse collapse show" data-bs-parent="#sceneAccordion">
+                        <SceneForm Scene="@Scene" Locations="@Scene.Locations" OnLocationChange="OnLocationChange" />
+                    </div>
+                </div>
+                <!-- Characters -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#characterInfo" aria-expanded="false" aria-controls="characterInfo">
+                            Characters
+                        </button>
+                    </h2>
+                    <div id="characterInfo" class="accordion-collapse collapse" data-bs-parent="#sceneAccordion">
+                        <CharacterTable Characters="@Scene.Characters" />
+                    </div>
+                </div>
+                <!-- Location -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#locationInfo" aria-expanded="false" aria-controls="locationInfo">
+                            Location
+                        </button>
+                    </h2>
+                    <div id="locationInfo" class="accordion-collapse collapse" data-bs-parent="#sceneAccordion">
+                        <LocationTable Locations="@Scene.Locations" />
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-primary" @onclick="SaveScene">Save Scene</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-4">
+        <AISuggestion suggestion="@suggestion" ApplySuggestion="SaveScene" GenerateSuggestion="GenerateSuggestion" />
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    public MainLayout MainLayout { get; set; } = default!;
+    [Parameter]
+    public Guid SceneId { get; set; }
+    private SceneEntity Scene = new SceneEntity();
+    private string suggestion = "AI Suggestion will be here...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Scene = await SceneService.GetSceneWithDetailsAsync(SceneId);
+    }
+
+    private async Task SaveScene()
+    {
+        await SceneService.UpdateAsync(Scene);
+        NavigationManager.NavigateTo("/sceneList");
+    }
+
+    private async void OnLocationChange(ChangeEventArgs e)
+    {
+        var storyId = e.Value!.ToString();
+        if (!string.IsNullOrEmpty(storyId))
+        {
+            var id = Guid.Parse(e.Value!.ToString()!);
+            Scene.Story = await StoryService.GetByIdAsync(id);
+        }
+    }
+
+    private async Task GenerateSuggestion()
+    {
+        MainLayout.ShowLoading(true);
+        suggestion = await AIService.GetSceneDescription(Scene) ?? string.Empty;
+        MainLayout.ShowLoading(false);
+    }
+
+    private async Task OnCharacterChange(ChangeEventArgs e)
+    {
+        var characterId = e.Value!.ToString();
+        if (!string.IsNullOrEmpty(characterId))
+        {
+            var id = Guid.Parse(e.Value!.ToString()!);
+            Scene.Characters.Add(await CharacterService.GetByIdAsync(id));
+        }
+    }
+}

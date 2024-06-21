@@ -1,0 +1,49 @@
+@page "/itemList"
+
+@using StoryWriter.Services
+@using StoryWriter.Data.Entities
+@using StoryWriter.Components.Elements
+
+@inject ItemService ItemService
+
+<div class="card">
+    <div class="card-header">
+        <h2>Item List : @ItemCount</h2>
+    </div>
+    <div class="card-body tabulator">
+        <ItemTable Items="@Items" DeleteItem="@DeleteItem" />
+    </div>
+    <div class="card-footer">
+        <a class="btn btn-success" href="/itemAdd">Add Item</a>
+    </div>
+</div>
+
+@code {
+    public ICollection<ItemEntity> Items { get; set; } = new List<ItemEntity>();
+    public int ItemCount { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Items = (await ItemService.GetAllAsync()).ToList();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await GetItemCount();
+        }
+    }
+
+    private async Task GetItemCount()
+    {
+        ItemCount = (await ItemService.CountAsync());
+        StateHasChanged();
+    }
+
+    private async void DeleteItem(Guid id)
+    {
+        await ItemService.DeleteAsync(id);
+        Items = (await ItemService.GetAllAsync()).ToList();
+    }
+}

@@ -1,0 +1,32 @@
+@using StoryWriter.Data.Entities
+
+<div class="container">
+    <div class="form-group mb-2">
+        <label for="name" class="form-label">Title</label>
+        <input id="name" class="form-control" @bind="@Scene.Title" placeholder="Scene name..." />
+    </div>
+    <div class="form-group mb-2">
+        <label for="description" class="form-label">Description</label>
+        <textarea id="description" class="form-control" @bind="@Scene.Description"
+            placeholder="Scene description..."></textarea>
+    </div>
+    <div class="form-group mb-2">
+        <label for="location" class="form-label">Location</label>
+        <select id="location" class="form-control" @onchange="OnLocationChange">
+            <option value="">Select a location...</option>
+            @foreach (var location in Locations)
+            {
+                <option value="@location.Id" selected="@(Scene.Locations.Contains(location))">@location.Name</option>
+            }
+        </select>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public SceneEntity Scene { get; set; } = new SceneEntity();
+    [Parameter]
+    public ICollection<LocationEntity> Locations { get; set; } = new List<LocationEntity>();
+    [Parameter]
+    public EventCallback<ChangeEventArgs> OnLocationChange { get; set; }
+}

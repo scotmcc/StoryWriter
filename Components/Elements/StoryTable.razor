@@ -1,0 +1,49 @@
+@using StoryWriter.Data
+@using StoryWriter.Data.Entities
+
+@inject IJSRuntime JSRuntime
+@inject StoryWriterContext context
+
+<div id="story-list"></div>
+
+<script>
+    function buildStoryList(stories) {
+        console.log(stories);
+        var storylist = new Tabulator("#story-list", {
+            data: stories,
+            placeholder: "No stories found...",
+            layout: "fitColumns",
+            columns: [
+                { title: "Title", field: "title", width: 200 },
+                { title: "Description", field: "description" },
+                {
+                    title: "Actions", formatter: "html", width: 200, align: "center", cellClick: function (e, cell) {
+                        var id = cell.getRow().getData().id;
+                        var url = "/story/" + id;
+                        window.location.href = url;
+                    }
+                }
+            ]
+        });
+        storylist.on("rowClick", function (e, row) {
+            var id = row.getData().id;
+            var url = "/storyEdit/" + id;
+            window.location.href = url;
+        });
+    }
+</script>
+
+@code {
+    [Parameter]
+    public IEnumerable<StoryEntity>? Stories { get; set; }
+    [Parameter]
+    public Action<Guid>? DeleteStory { get; set; }
+    protected async override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("buildStoryList", Stories);
+            StateHasChanged();
+        }
+    }
+}

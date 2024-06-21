@@ -1,0 +1,9 @@
+<div class="spinner-overlay" style="@OverlayStyle">
+    <i class="fa-solid fa-spinner fa-spin" style="font-size:60px; color: #74C0FC;"></i>
+</div>
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+    private string OverlayStyle => IsVisible ? "display: flex;" : "display: none;";
+}

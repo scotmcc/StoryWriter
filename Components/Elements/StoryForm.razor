@@ -1,0 +1,30 @@
+@using StoryWriter.Data.Entities
+
+<div class="container">
+    <div class="form-group mb-2">
+        <label for="title" class="form-label">Title</label>
+        <input id="title" class="form-control" @bind="@Story.Title" placeholder="Story title..." />
+    </div>
+
+    <div class="form-group mb-2">
+        <label for="genre" class="form-label">Genre</label>
+        <select id="genre" class="form-control" @bind="@Story.Genre">
+            <option value="">Select a genre...</option>
+            @foreach (var genre in Enum.GetValues(typeof(Genre)))
+            {
+                <option value="@genre">@genre</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group mb-2">
+        <label for="content">Content</label>
+        <textarea id="content" class="form-control" @bind="@Story.Description"
+            placeholder="Story Description..."></textarea>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public StoryEntity Story { get; set; } = new StoryEntity();
+}

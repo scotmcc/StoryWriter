@@ -1,0 +1,115 @@
+﻿@page "/"
+
+@using StoryWriter.Services
+
+@inject StoryService StoryService
+@inject CharacterService CharacterService
+@inject ItemService ItemService
+@inject SceneService SceneService
+@inject ChapterService ChapterService
+@inject LocationService LocationService
+
+<div class="row mb-4">
+    <div class="col">
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <a href="/storyList">Stories</a>
+                </h3>
+            </div>
+            <div class="card-body">
+                <div>@StoryCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <a href="/characterList">Characters</a>
+                </h3>
+            </div>
+            <div class="card-body">
+                <div>@CharacterCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <a href="/itemList">Items</a>
+                </h3>
+            </div>
+            <div class="card-body">
+                <div>@ItemCount</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <a href="/sceneList">Scenes</a>
+                </h3>
+            </div>
+            <div class="card-body">
+                <div>@SceneCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <a href="/locationList">Locations</a>
+                </h3>
+            </div>
+            <div class="card-body">
+                <div>@LocationCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <a href="/chapterList">Chapters</a>
+                </h3>
+            </div>
+            <div class="card-body">
+                <div>@ChapterCount</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private int StoryCount { get; set; } = 0;
+    private int CharacterCount { get; set; } = 0;
+    private int ItemCount { get; set; } = 0;
+    private int SceneCount { get; set; } = 0;
+    private int ChapterCount { get; set; } = 0;
+    private int LocationCount { get; set; } = 0;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Getcounts();
+        }
+    }
+    private async void Getcounts()
+    {
+        StoryCount = await StoryService.CountAsync();
+        CharacterCount = await CharacterService.CountAsync();
+        ItemCount = await ItemService.CountAsync();
+        SceneCount = await SceneService.CountAsync();
+        ChapterCount = await ChapterService.CountAsync();
+        LocationCount = await LocationService.CountAsync();
+        StateHasChanged();
+    }
+
+}

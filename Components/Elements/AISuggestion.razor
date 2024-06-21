@@ -1,0 +1,17 @@
+<div class="card h-100">
+    <div class="card-header">AI Suggestion</div>
+    <div class="card-body">@suggestion</div>
+    <div class="card-footer">
+        <button class="btn btn-primary" @onclick="ApplySuggestion">Apply</button>
+        <button class="btn btn-primary" @onclick="GenerateSuggestion">Generate</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string suggestion { get; set; } = "AI Suggestion will be here";
+    [Parameter]
+    public EventCallback ApplySuggestion { get; set; } = default!;
+    [Parameter]
+    public EventCallback GenerateSuggestion { get; set; } = default!;
+}

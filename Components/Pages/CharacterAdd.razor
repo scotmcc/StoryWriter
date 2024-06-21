@@ -1,0 +1,104 @@
+@page "/characterAdd/{storyId?}"
+
+@using StoryWriter.Data.Entities
+@using StoryWriter.Services
+@using StoryWriter.Components.Layout
+@using StoryWriter.Components.Elements
+
+@inject NavigationManager NavigationManager
+@inject CharacterService CharacterService
+@inject StoryService StoryService
+@inject AIService AIService
+
+<div class="row">
+    <div class="col-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Add Character</h3>
+            </div>
+            <div class="card-body">
+                <CharacterForm Stories="@Stories" Character="@Character" OnStoryChanged="SetStory" />
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-primary" @onclick="AddCharacter">Save Character</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-4">
+        <AISuggestion ApplySuggestion="ApplySuggestion" GenerateSuggestion="GenerateSuggestion"
+            suggestion="@suggestion" />
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private MainLayout MainLayout { get; set; } = default!;
+    [Parameter]
+    public string? storyId { get; set; }
+    private string suggestion = "AI Suggestion will be here...";
+    private Guid selectedStory = Guid.Empty;
+    private CharacterEntity Character = new CharacterEntity();
+    private IEnumerable<StoryEntity> Stories = new List<StoryEntity>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Stories = await StoryService.GetAllAsync();
+        if (!string.IsNullOrEmpty(storyId))
+        {
+            selectedStory = Guid.Parse(storyId);
+            Character.Story = await StoryService.GetByIdAsync(selectedStory) ?? new StoryEntity();
+        }
+    }
+
+    private async void AddCharacter()
+    {
+        try
+        {
+            var story = await StoryService.GetByIdAsync(selectedStory);
+            if (story != null)
+            {
+                Character.Story = story;
+                story.Characters.Add(Character);
+                await CharacterService.CreateAsync(Character);
+                NavigationManager.NavigateTo("/characterList");
+            }
+            else
+            {
+                Console.WriteLine("Selected story not found.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error adding character: {ex.Message}");
+        }
+    }
+
+    private void ApplySuggestion()
+    {
+        Character.Description = suggestion;
+    }
+
+    private void SetStory(ChangeEventArgs e)
+    {
+        if (Guid.TryParse(e.Value?.ToString(), out var storyId))
+        {
+            selectedStory = storyId;
+            Character.Story = Stories.FirstOrDefault(s => s.Id == selectedStory) ?? new StoryEntity();
+        }
+    }
+
+    private async Task GenerateSuggestion()
+    {
+        try
+        {
+            MainLayout.ShowLoading(true);
+            suggestion = await AIService.GetCharacterDescription(Character) ?? string.Empty;
+            MainLayout.ShowLoading(false);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error generating suggestion: {ex.Message}");
+            MainLayout.ShowLoading(false);
+        }
+    }
+}

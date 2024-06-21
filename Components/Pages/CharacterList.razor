@@ -1,0 +1,49 @@
+@page "/characterList"
+
+@using StoryWriter.Services
+@using StoryWriter.Data.Entities
+@using StoryWriter.Components.Elements
+
+@inject CharacterService CharacterService
+
+<div class="card">
+    <div class="card-header">
+        <h2>Character List: @CharacterCount</h2>
+    </div>
+    <div class="card-body tabulator">
+        <CharacterTable Characters="@Characters" DeleteCharacter="@DeleteCharacter" />
+    </div>
+    <div class="card-footer">
+        <a class="btn btn-success" href="/characterAdd">Add Character</a>
+    </div>
+</div>
+
+@code {
+    public ICollection<CharacterEntity> Characters { get; set; } = new List<CharacterEntity>();
+    public int CharacterCount { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Characters = (await CharacterService.GetAllAsync()).ToList();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await GetCharacterCount();
+        }
+    }
+
+    private async Task GetCharacterCount()
+    {
+        CharacterCount = (await CharacterService.CountAsync());
+        StateHasChanged();
+    }
+
+    private async Task DeleteCharacter(Guid id)
+    {
+        await CharacterService.DeleteAsync(id);
+        Characters = (await CharacterService.GetAllAsync()).ToList();
+    }
+}

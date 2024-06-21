@@ -1,0 +1,49 @@
+@using StoryWriter.Data
+@using StoryWriter.Data.Entities
+
+@inject IJSRuntime JSRuntime
+@inject StoryWriterContext context
+
+<div id="item-list"></div>
+
+<script>
+    function buildItemTable(items) {
+        var itemlist = new Tabulator("#item-list", {
+            data: items,
+            placeholder: "No items found...",
+            layout: "fitColumns",
+            columns: [
+                { title: "Name", field: "name", width: 200 },
+                { title: "Description", field: "description" },
+                {
+                    title: "Actions", formatter: "html", width: 200, cellClick: function (e, cell) {
+                        var id = cell.getRow().getData().id;
+                        var url = "/item/" + id;
+                        window.location.href = url;
+                    }
+                }
+            ]
+        });
+        itemlist.on("rowClick", function (e, row) {
+            var id = row.getData().id;
+            var url = "/itemEdit/" + id;
+            window.location.href = url;
+        });
+    }
+</script>
+
+@code {
+    [Parameter]
+    public ICollection<ItemEntity>? Items { get; set; }
+    [Parameter]
+    public Action<Guid>? DeleteItem { get; set; }
+
+    protected async override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("buildItemTable", Items);
+            StateHasChanged();
+        }
+    }
+}
